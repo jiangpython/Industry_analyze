@@ -4,6 +4,7 @@ from typing import List, Optional
 from app.core.database import get_db
 from app.database.models import IndustryData, AnalysisResult
 from app.services.analyzers.gemini_analyzer import GeminiAnalyzer
+from app.utils.industry_mapper import IndustryMapper
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -51,8 +52,21 @@ class IndustryAnalysisResponse(BaseModel):
 @router.get("/", response_model=List[str])
 def get_industries(db: Session = Depends(get_db)):
     """获取所有行业列表"""
-    industries = db.query(IndustryData.industry).distinct().all()
-    return [industry[0] for industry in industries]
+    # 返回系统支持的标准行业列表
+    return IndustryMapper.get_all_industries()
+
+@router.get("/suggest/{query}", response_model=dict)
+def get_industry_suggestions(query: str):
+    """获取行业建议"""
+    suggestions = IndustryMapper.get_suggestions(query)
+    mapped = IndustryMapper.map_industry(query)
+    
+    return {
+        "query": query,
+        "mapped_industry": mapped,
+        "suggestions": suggestions,
+        "all_industries": IndustryMapper.get_all_industries()
+    }
 
 
 @router.get("/{industry_name}/data", response_model=List[IndustryDataResponse])
@@ -64,7 +78,18 @@ def get_industry_data(
     db: Session = Depends(get_db)
 ):
     """获取行业数据"""
-    query = db.query(IndustryData).filter(IndustryData.industry == industry_name)
+    # 使用行业映射器进行智能匹配
+    mapped_industry = IndustryMapper.map_industry(industry_name)
+    if not mapped_industry:
+        # 如果无法映射，提供建议
+        suggestions = IndustryMapper.get_suggestions(industry_name)
+        error_msg = f"未找到行业 '{industry_name}'"
+        if suggestions:
+            error_msg += f"，建议使用: {', '.join(suggestions)}"
+        raise HTTPException(status_code=404, detail=error_msg)
+    
+    # 使用映射后的行业名称查询
+    query = db.query(IndustryData).filter(IndustryData.industry == mapped_industry)
     
     if data_type:
         query = query.filter(IndustryData.data_type == data_type)
