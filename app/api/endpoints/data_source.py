@@ -7,7 +7,7 @@ from app.utils.local_storage import local_storage
 from pydantic import BaseModel
 from datetime import datetime
 
-router = APIRouter(prefix="/data", tags=["data"])
+router = APIRouter(prefix="/data", tags=["数据源"])
 
 # Pydantic模型
 class DataSourceResponse(BaseModel):
@@ -26,7 +26,7 @@ class StockSearchResult(BaseModel):
 # 创建数据源选择器实例
 data_selector = DataSourceSelector()
 
-@router.get("/stock/{symbol}", response_model=DataSourceResponse)
+@router.get("/stock/{symbol}", response_model=DataSourceResponse, summary="📊 获取股票数据", operation_id="data_source_stock")
 def get_stock_data(
     symbol: str,
     source: str = Query("auto", description="数据源: auto, yahoo, akshare"),
@@ -84,7 +84,7 @@ def get_stock_data(
     except Exception as e:
         return DataSourceResponse(success=False, message=f"获取数据失败: {str(e)}", source=source)
 
-@router.get("/market/{market}", response_model=DataSourceResponse)
+@router.get("/market/{market}", response_model=DataSourceResponse, summary="🌍 获取市场数据", operation_id="data_source_market")
 def get_market_data(
     market: str,
     source: str = Query("auto", description="数据源: auto, yahoo, akshare")
@@ -110,7 +110,7 @@ def get_market_data(
     except Exception as e:
         return DataSourceResponse(success=False, message=f"获取市场数据失败: {str(e)}", source=source)
 
-@router.get("/industry/{industry}", response_model=DataSourceResponse)
+@router.get("/industry/{industry}", response_model=DataSourceResponse, summary="🏭 获取行业数据", operation_id="data_source_industry")
 def get_industry_data(
     industry: str,
     source: str = Query("akshare", description="数据源: akshare"),
@@ -138,7 +138,7 @@ def get_industry_data(
     except Exception as e:
         return DataSourceResponse(success=False, message=f"获取行业数据失败: {str(e)}", source=source)
 
-@router.get("/search", response_model=List[StockSearchResult])
+@router.get("/search", response_model=List[StockSearchResult], summary="🔍 搜索股票", operation_id="data_source_search")
 def search_stocks(
     query: str,
     source: str = Query("auto", description="数据源: auto, yahoo, akshare")

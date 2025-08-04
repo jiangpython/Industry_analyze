@@ -1,0 +1,450 @@
+/* 自定义API文档样式 - 优化中文显示和紧凑布局 */
+
+/* 整体容器优化 */
+.swagger-ui {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+/* 标题栏优化 */
+.swagger-ui .topbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.swagger-ui .topbar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.swagger-ui .topbar .download-url-wrapper {
+    margin: 15px 0;
+}
+
+.swagger-ui .topbar .download-url-wrapper input {
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-weight: 500;
+}
+
+.swagger-ui .topbar .download-url-wrapper input::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+/* 操作面板优化 */
+.swagger-ui .opblock {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.swagger-ui .opblock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.swagger-ui .opblock .opblock-summary {
+    padding: 18px 20px;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.swagger-ui .opblock .opblock-summary-method {
+    min-width: 90px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 6px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.swagger-ui .opblock .opblock-summary-path {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+}
+
+.swagger-ui .opblock .opblock-summary-description {
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+/* 标签页优化 */
+.swagger-ui .opblock-tag {
+    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    background: white;
+}
+
+.swagger-ui .opblock-tag .opblock-tag-section {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.swagger-ui .opblock-tag .opblock-tag-section h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 15px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.swagger-ui .opblock-tag .opblock-tag-section .opblock-tag-description {
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+/* 参数表格优化 */
+.swagger-ui .parameters-container {
+    margin: 20px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.swagger-ui .parameters-container .parameters {
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.swagger-ui .parameters-container .parameters th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    padding: 12px 15px;
+    font-size: 13px;
+}
+
+.swagger-ui .parameters-container .parameters td {
+    padding: 12px 15px;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    background: white;
+}
+
+.swagger-ui .parameters-container .parameters tr:hover td {
+    background: #f8f9fa;
+}
+
+/* 响应区域优化 */
+.swagger-ui .responses-wrapper {
+    margin: 20px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.swagger-ui .responses-wrapper .responses-inner {
+    font-size: 14px;
+}
+
+/* 模型定义优化 */
+.swagger-ui .model {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.swagger-ui .model .model-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+/* 按钮优化 */
+.swagger-ui .btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.swagger-ui .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.swagger-ui .btn.execute {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+.swagger-ui .btn.execute:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+}
+
+/* 参数名称优化 */
+.swagger-ui .parameter__name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.swagger-ui .parameter__type {
+    color: #6c757d;
+    font-size: 12px;
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.swagger-ui .parameter__deprecated {
+    color: #dc3545;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f8d7da;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* 描述区域优化 */
+.swagger-ui .opblock-description-wrapper {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    border-left: 4px solid #667eea;
+}
+
+.swagger-ui .opblock-description-wrapper .opblock-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #495057;
+}
+
+/* 代码高亮优化 */
+.swagger-ui .microlight {
+    background: #2d3748;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 标签页优化 */
+.swagger-ui .tab-header {
+    background: white;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.swagger-ui .tab-header .tab-item {
+    padding: 12px 20px;
+    font-weight: 600;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.swagger-ui .tab-header .tab-item.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* 响应状态优化 */
+.swagger-ui .response-col_status {
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.swagger-ui .response-col_status.response-200 {
+    background: #d4edda;
+    color: #155724;
+}
+
+.swagger-ui .response-col_status.response-400,
+.swagger-ui .response-col_status.response-500 {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* 操作面板路径优化 */
+.swagger-ui .opblock .opblock-summary {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.swagger-ui .opblock .opblock-summary-path {
+    flex: 1;
+    font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+}
+
+.swagger-ui .opblock .opblock-summary-description {
+    flex: 1;
+    margin-left: 15px;
+    padding-left: 15px;
+    border-left: 2px solid rgba(0,0,0,0.1);
+}
+
+/* 标签页标题优化 */
+.swagger-ui .opblock-tag .opblock-tag-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.swagger-ui .opblock-tag .opblock-tag-section h3::before {
+    content: '📊';
+    font-size: 20px;
+}
+
+/* 滚动条优化 */
+.swagger-ui ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.swagger-ui ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.swagger-ui ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.swagger-ui ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .swagger-ui {
+        padding: 10px;
+        max-width: 100%;
+    }
+    
+    .swagger-ui .opblock .opblock-summary-path {
+        font-size: 13px;
+        word-break: break-all;
+    }
+    
+    .swagger-ui .opblock .opblock-summary-description {
+        font-size: 12px;
+        margin-top: 10px;
+        border-left: none;
+        padding-left: 0;
+    }
+    
+    .swagger-ui .opblock-tag .opblock-tag-section {
+        padding: 15px;
+    }
+    
+    .swagger-ui .opblock-tag .opblock-tag-section h3 {
+        font-size: 16px;
+    }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    .swagger-ui {
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        color: #e2e8f0;
+    }
+    
+    .swagger-ui .opblock {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+    
+    .swagger-ui .parameters-container .parameters th {
+        background: #4a5568;
+    }
+    
+    .swagger-ui .parameters-container .parameters td {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+}
+
+/* 特殊效果 */
+.swagger-ui .opblock-tag-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.swagger-ui .opblock-tag-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 50%;
+    transform: translate(30px, -30px);
+    pointer-events: none;
+}
+
+/* 加载动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.swagger-ui .opblock {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.swagger-ui .opblock:nth-child(2) { animation-delay: 0.1s; }
+.swagger-ui .opblock:nth-child(3) { animation-delay: 0.2s; }
+.swagger-ui .opblock:nth-child(4) { animation-delay: 0.3s; }
+.swagger-ui .opblock:nth-child(5) { animation-delay: 0.4s; } 

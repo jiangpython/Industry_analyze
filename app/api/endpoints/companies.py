@@ -8,7 +8,7 @@ from app.services.analyzers.gemini_analyzer import GeminiAnalyzer
 from pydantic import BaseModel
 from datetime import datetime
 
-router = APIRouter(prefix="/companies", tags=["companies"])
+router = APIRouter(prefix="/companies", tags=["公司管理"])
 
 # Pydantic模型
 class CompanyBase(BaseModel):

@@ -7,9 +7,9 @@ API概览页面
 from fastapi import APIRouter
 from typing import Dict, Any
 
-router = APIRouter(prefix="/overview", tags=["overview"])
+router = APIRouter(prefix="/overview", tags=["API概览"])
 
-@router.get("/")
+@router.get("/", summary="📋 API概览页面", operation_id="api_overview")
 def get_api_overview():
     """
     API概览页面

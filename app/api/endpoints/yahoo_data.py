@@ -6,7 +6,7 @@ from app.utils.local_storage import local_storage
 from pydantic import BaseModel
 from datetime import datetime
 
-router = APIRouter(prefix="/yahoo", tags=["yahoo"])
+router = APIRouter(prefix="/yahoo", tags=["Yahoo数据"])
 
 # Pydantic模型
 class StockSearchResult(BaseModel):
@@ -20,14 +20,14 @@ class YahooDataResponse(BaseModel):
     message: str
     data: Optional[Dict[str, Any]] = None
 
-@router.get("/search", response_model=List[StockSearchResult])
+@router.get("/search", response_model=List[StockSearchResult], summary="🔍 搜索股票", operation_id="yahoo_search")
 def search_stocks(query: str):
     """搜索股票"""
     collector = YahooFinanceCollector()
     results = collector.search_stocks(query)
     return results
 
-@router.get("/stock/{ticker}", response_model=YahooDataResponse)
+@router.get("/stock/{ticker}", response_model=YahooDataResponse, summary="📊 获取股票数据", operation_id="yahoo_stock_data")
 def get_stock_data(
     ticker: str,
     period: str = Query("1y", description="数据周期，如1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max"),
@@ -68,7 +68,7 @@ def get_stock_data(
     except Exception as e:
         return YahooDataResponse(success=False, message=f"获取数据失败: {str(e)}")
 
-@router.get("/market/{market}", response_model=YahooDataResponse)
+@router.get("/market/{market}", response_model=YahooDataResponse, summary="🌍 获取市场数据", operation_id="yahoo_market_data")
 def get_market_data(market: str):
     """获取市场数据"""
     try:
@@ -83,7 +83,7 @@ def get_market_data(market: str):
     except Exception as e:
         return YahooDataResponse(success=False, message=f"获取市场数据失败: {str(e)}")
 
-@router.get("/industry/{industry_name}", response_model=YahooDataResponse)
+@router.get("/industry/{industry_name}", response_model=YahooDataResponse, summary="🏭 获取行业股票", operation_id="yahoo_industry_stocks")
 def get_industry_stocks(
     industry_name: str,
     limit: int = Query(10, description="返回的股票数量限制")
@@ -109,7 +109,7 @@ def get_industry_stocks(
     except Exception as e:
         return YahooDataResponse(success=False, message=f"获取行业股票失败: {str(e)}")
 
-@router.get("/batch", response_model=YahooDataResponse)
+@router.get("/batch", response_model=YahooDataResponse, summary="📦 批量获取股票数据", operation_id="yahoo_batch_data")
 def batch_get_stocks(
     tickers: str = Query(..., description="股票代码列表，用逗号分隔"),
     period: str = Query("1mo", description="数据周期"),

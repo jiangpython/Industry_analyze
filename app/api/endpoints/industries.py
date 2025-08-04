@@ -8,7 +8,7 @@ from app.utils.industry_mapper import IndustryMapper
 from pydantic import BaseModel
 from datetime import datetime
 
-router = APIRouter(prefix="/industries", tags=["industries"])
+router = APIRouter(prefix="/industries", tags=["行业管理"])
 
 # Pydantic模型
 class IndustryDataBase(BaseModel):

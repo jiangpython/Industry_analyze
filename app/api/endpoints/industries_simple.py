@@ -12,7 +12,7 @@ from app.services.analyzers.gemini_analyzer import GeminiAnalyzer
 from pydantic import BaseModel
 from datetime import datetime
 
-router = APIRouter(prefix="/industries", tags=["industries"])
+router = APIRouter(prefix="/industries", tags=["行业管理"])
 
 # Pydantic模型
 class IndustryDataBase(BaseModel):
@@ -46,13 +46,13 @@ class IndustryAnalysisResponse(BaseModel):
     created_at: datetime
 
 
-@router.get("/", response_model=List[str])
+@router.get("/", response_model=List[str], summary="📋 获取行业列表", operation_id="industries_list")
 def get_industries():
     """获取所有行业列表"""
     # 返回系统支持的标准行业列表
     return IndustryMapper.get_all_industries()
 
-@router.get("/suggest/{query}", response_model=dict)
+@router.get("/suggest/{query}", response_model=dict, summary="🔍 智能行业匹配", operation_id="industry_suggestions")
 def get_industry_suggestions(
     query: str = Path(..., description="行业查询关键词，支持中文和英文。例如：医药、新能源、半导体、medical、new_energy、semiconductor")
 ):
@@ -96,7 +96,7 @@ def get_industry_suggestions(
     }
 
 
-@router.get("/{industry_name}/data", response_model=List[IndustryDataResponse])
+@router.get("/{industry_name}/data", response_model=List[IndustryDataResponse], summary="📊 获取行业数据", operation_id="industry_data")
 def get_industry_data(
     industry_name: str = Path(..., description="行业名称，支持中文和英文。例如：医药、新能源、半导体"),
     data_type: Optional[str] = Query(None, description="数据类型筛选，可选值：market、financial、trend。不填则返回所有类型"),
@@ -195,7 +195,7 @@ def get_industry_data(
     return response_data
 
 
-@router.get("/{industry_name}/latest", response_model=IndustryDataResponse)
+@router.get("/{industry_name}/latest", response_model=IndustryDataResponse, summary="📈 获取行业最新数据", operation_id="industry_latest_data")
 def get_latest_industry_data(
     industry_name: str = Path(..., description="行业名称，支持中文和英文。例如：医药、新能源、半导体"),
     force_refresh: bool = Query(False, description="强制刷新，优先获取最新数据。默认False，优先本地缓存")
@@ -270,7 +270,7 @@ def get_latest_industry_data(
     )
 
 
-@router.post("/{industry_name}/analyze", response_model=IndustryAnalysisResponse)
+@router.post("/{industry_name}/analyze", response_model=IndustryAnalysisResponse, summary="🤖 AI行业分析", operation_id="industry_ai_analysis")
 def analyze_industry(
     industry_name: str = Path(..., description="行业名称，支持中文和英文。例如：医药、新能源、半导体"),
     request: IndustryAnalysisRequest = ...,
@@ -368,7 +368,7 @@ def analyze_industry(
     )
 
 
-@router.get("/{industry_name}/analysis", response_model=List[IndustryAnalysisResponse])
+@router.get("/{industry_name}/analysis", response_model=List[IndustryAnalysisResponse], summary="📊 获取行业分析报告", operation_id="industry_analysis_reports")
 def get_industry_analysis(
     industry_name: str = Path(..., description="行业名称，支持中文和英文。例如：医药、新能源、半导体"),
     analysis_type: Optional[str] = Query(None, description="分析类型筛选，可选值：trend、investment、risk。不填则返回所有类型")
@@ -443,7 +443,7 @@ def get_industry_analysis(
     return industry_analyses
 
 
-@router.get("/summary", response_model=dict)
+@router.get("/summary", response_model=dict, summary="📈 获取行业数据概览", operation_id="industries_summary")
 def get_industries_summary():
     """
     获取行业汇总信息

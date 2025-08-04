@@ -12,7 +12,7 @@ from app.services.realtime_data_service import RealtimeDataService
 from pydantic import BaseModel
 from datetime import datetime
 
-router = APIRouter(prefix="/companies", tags=["companies"])
+router = APIRouter(prefix="/companies", tags=["公司管理"])
 
 # Pydantic模型
 class CompanyBase(BaseModel):
@@ -58,7 +58,7 @@ class AnalysisResponse(BaseModel):
     created_at: datetime
 
 
-@router.get("/", response_model=List[CompanyResponse])
+@router.get("/", response_model=List[CompanyResponse], summary="📋 获取公司列表", operation_id="companies_list")
 def get_companies(
     industry: Optional[str] = Query(None, description="行业筛选，支持中文。例如：医药、新能源、半导体、金融、房地产"),
     skip: int = Query(0, description="跳过记录数，用于分页。默认：0"),
@@ -174,7 +174,7 @@ def get_companies(
         return company_list[skip:skip + limit]
 
 
-@router.get("/{company_code}", response_model=CompanyResponse)
+@router.get("/{company_code}", response_model=CompanyResponse, summary="🏢 获取公司详细信息", operation_id="company_details")
 def get_company(
     company_code: str = Path(..., description="公司代码，6位数字。例如：000001（平安银行）、000002（万科A）、300750（宁德时代）"),
     force_refresh: bool = Query(False, description="强制刷新数据，忽略缓存。默认False，建议仅在需要最新数据时使用")
@@ -251,7 +251,7 @@ def get_company(
         )
 
 
-@router.get("/{company_code}/financial-data", response_model=List[FinancialDataResponse])
+@router.get("/{company_code}/financial-data", response_model=List[FinancialDataResponse], summary="💰 获取公司财务数据", operation_id="company_financial_data")
 def get_company_financial_data(
     company_code: str = Path(..., description="公司代码，6位数字。例如：000001"),
     data_type: Optional[str] = Query(None, description="财务数据类型筛选，可选值：annual、quarterly。不填则返回所有类型"),
@@ -371,7 +371,7 @@ def get_company_financial_data(
     return filtered_records
 
 
-@router.post("/{company_code}/analyze", response_model=AnalysisResponse)
+@router.post("/{company_code}/analyze", response_model=AnalysisResponse, summary="🤖 AI智能分析公司", operation_id="company_ai_analysis")
 def analyze_company(
     company_code: str = Path(..., description="公司代码，6位数字。例如：000001"),
     request: AnalysisRequest = ...,
@@ -480,7 +480,7 @@ def analyze_company(
     )
 
 
-@router.get("/{company_code}/analysis", response_model=List[AnalysisResponse])
+@router.get("/{company_code}/analysis", response_model=List[AnalysisResponse], summary="📊 获取公司分析报告", operation_id="company_analysis_reports")
 def get_company_analysis(
     company_code: str = Path(..., description="公司代码，6位数字。例如：000001"),
     analysis_type: Optional[str] = Query(None, description="分析类型筛选，可选值：financial、industry。不填则返回所有类型")
@@ -548,7 +548,7 @@ def get_company_analysis(
     return company_analyses
 
 
-@router.get("/summary", response_model=dict)
+@router.get("/summary", response_model=dict, summary="📈 获取公司数据概览", operation_id="companies_summary")
 def get_companies_summary():
     """
     获取公司汇总信息

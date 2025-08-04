@@ -7,7 +7,7 @@ from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/local/companies", tags=["local-companies"])
+router = APIRouter(prefix="/local/companies", tags=["本地公司"])
 
 
 @router.get("/")

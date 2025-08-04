@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from app.services.incremental_data_service import incremental_service
 
-router = APIRouter(prefix="/historical", tags=["historical"])
+router = APIRouter(prefix="/historical", tags=["历史数据"])
 
 # Pydantic模型
 class HistoricalDataResponse(BaseModel):
@@ -30,7 +30,7 @@ class DataStatisticsResponse(BaseModel):
     volume_stats: Dict[str, float]
     last_updated: str
 
-@router.get("/stock/{symbol}", response_model=HistoricalDataResponse)
+@router.get("/stock/{symbol}", response_model=HistoricalDataResponse, summary="📈 获取股票历史数据", operation_id="stock_historical_data")
 def get_stock_historical_data(
     symbol: str = Path(..., description="股票代码，6位数字。例如：000001（平安银行）、000002（万科A）、300750（宁德时代）"),
     start_date: Optional[str] = Query(None, description="开始日期，格式：YYYY-MM-DD。例如：2023-01-01。默认：1年前"),
@@ -114,7 +114,7 @@ def get_stock_historical_data(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取历史数据失败: {str(e)}")
 
-@router.get("/stock/{symbol}/statistics", response_model=DataStatisticsResponse)
+@router.get("/stock/{symbol}/statistics", response_model=DataStatisticsResponse, summary="📊 获取股票数据统计", operation_id="stock_data_statistics")
 def get_stock_data_statistics(
     symbol: str = Path(..., description="股票代码，6位数字。例如：000001（平安银行）、000002（万科A）、300750（宁德时代）")
 ):
@@ -160,7 +160,7 @@ def get_stock_data_statistics(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取统计信息失败: {str(e)}")
 
-@router.get("/incremental/demo")
+@router.get("/incremental/demo", summary="🔍 演示增量数据逻辑", operation_id="incremental_demo")
 def demonstrate_incremental_logic():
     """
     演示增量更新逻辑
@@ -205,7 +205,7 @@ def demonstrate_incremental_logic():
         }
     }
 
-@router.get("/cache/status")
+@router.get("/cache/status", summary="💾 获取缓存状态", operation_id="historical_cache_status")
 def get_cache_status():
     """
     获取缓存状态信息
@@ -231,7 +231,7 @@ def get_cache_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取缓存状态失败: {str(e)}")
 
-@router.delete("/cache/{symbol}")
+@router.delete("/cache/{symbol}", summary="🗑️ 清除股票缓存", operation_id="clear_stock_cache")
 def clear_symbol_cache(
     symbol: str,
     period: Optional[str] = Query(None, description="数据周期，为空则清除所有周期")
@@ -265,7 +265,7 @@ def clear_symbol_cache(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"清除缓存失败: {str(e)}")
 
-@router.get("/test/incremental")
+@router.get("/test/incremental", summary="🧪 测试增量功能", operation_id="test_incremental")
 def test_incremental_functionality():
     """
     测试增量功能

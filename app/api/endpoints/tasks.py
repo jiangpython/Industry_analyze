@@ -9,7 +9,7 @@ from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/tasks", tags=["tasks"])
+router = APIRouter(prefix="/tasks", tags=["任务管理"])
 
 # Pydantic模型
 class TaskRequest(BaseModel):

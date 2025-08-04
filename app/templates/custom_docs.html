@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金融分析系统 - API文档</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="/static/custom.css" />
+    <style>
+        /* 自定义样式增强 */
+        .custom-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        }
+        
+        .custom-header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .custom-header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            padding: 0 20px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .feature-card h3 {
+            color: #667eea;
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            color: #6c757d;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .quick-start {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .quick-start h2 {
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        
+        .quick-start ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .quick-start li {
+            margin: 8px 0;
+            color: #495057;
+        }
+        
+        .api-endpoints {
+            margin: 30px 0;
+        }
+        
+        .endpoint-group {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .endpoint-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .endpoint-list {
+            padding: 20px;
+        }
+        
+        .endpoint-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .endpoint-item:last-child {
+            border-bottom: none;
+        }
+        
+        .endpoint-method {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .endpoint-path {
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+            color: #2c3e50;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .endpoint-description {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-header">
+        <h1>🚀 金融分析系统</h1>
+        <p>智能金融分析系统 - 专注于医药、新能源、半导体、芯片等行业的数据采集、处理和分析</p>
+    </div>
+    
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>📊 实时数据监控</h3>
+            <p>获取股票实时价格、成交量、涨跌幅等实时市场数据，支持A股所有股票代码，智能缓存机制提升响应速度。</p>
+        </div>
+        <div class="feature-card">
+            <h3>📈 历史数据分析</h3>
+            <p>查看股票历史价格、K线数据、财务数据等历史信息，支持日线、周线、月线数据，提供历史趋势分析。</p>
+        </div>
+        <div class="feature-card">
+            <h3>🏢 公司智能分析</h3>
+            <p>公司基本信息管理、财务数据分析、AI智能分析报告、公司对比分析、风险评估等功能。</p>
+        </div>
+        <div class="feature-card">
+            <h3>🏭 行业深度研究</h3>
+            <p>行业数据、行业公司列表、行业趋势分析、行业对比研究、投资机会分析等功能。</p>
+        </div>
+        <div class="feature-card">
+            <h3>⚙️ 任务智能管理</h3>
+            <p>数据采集任务管理、分析任务调度、任务状态监控、任务结果查看、自动化任务配置。</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔌 多数据源支持</h3>
+            <p>AKShare、Yahoo Finance等多数据源支持，数据源配置管理、数据质量监控、数据源切换功能。</p>
+        </div>
+    </div>
+    
+    <div class="quick-start">
+        <h2>🎯 快速开始</h2>
+        <ul>
+            <li><strong>API文档</strong>: 访问 <code>/docs</code> 查看完整的API文档</li>
+            <li><strong>API概览</strong>: 访问 <code>/api/v1/</code> 查看所有可用端点</li>
+            <li><strong>系统状态</strong>: 访问 <code>/health</code> 检查系统健康状态</li>
+            <li><strong>实时数据</strong>: 使用 <code>/api/v1/realtime/stock/{股票代码}</code> 获取实时数据</li>
+            <li><strong>公司信息</strong>: 使用 <code>/api/v1/companies/</code> 获取公司列表</li>
+            <li><strong>行业数据</strong>: 使用 <code>/api/v1/industries/</code> 获取行业信息</li>
+        </ul>
+    </div>
+    
+    <div class="api-endpoints">
+        <h2 style="text-align: center; color: #2c3e50; margin: 40px 0 30px 0;">📋 API端点概览</h2>
+        
+        <div class="endpoint-group">
+            <div class="endpoint-header">📊 实时数据</div>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/realtime/stock/{symbol}</span>
+                    <span class="endpoint-description">获取个股实时数据</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/realtime/companies/{industry}</span>
+                    <span class="endpoint-description">获取指定行业的公司列表（实时）</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/realtime/cache/info</span>
+                    <span class="endpoint-description">获取缓存信息</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">DELETE</span>
+                    <span class="endpoint-path">/api/v1/realtime/cache</span>
+                    <span class="endpoint-description">清除缓存</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="endpoint-group">
+            <div class="endpoint-header">📈 历史数据</div>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/historical/stock/{symbol}</span>
+                    <span class="endpoint-description">获取股票历史数据</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/historical/financial/{symbol}</span>
+                    <span class="endpoint-description">获取财务历史数据</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="endpoint-group">
+            <div class="endpoint-header">🏢 公司管理</div>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/companies/</span>
+                    <span class="endpoint-description">获取公司列表</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/companies/{code}</span>
+                    <span class="endpoint-description">获取公司详细信息</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">POST</span>
+                    <span class="endpoint-path">/api/v1/companies/{code}/analyze</span>
+                    <span class="endpoint-description">AI智能分析公司</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/companies/{code}/financial-data</span>
+                    <span class="endpoint-description">获取公司财务数据</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="endpoint-group">
+            <div class="endpoint-header">🏭 行业管理</div>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/industries/</span>
+                    <span class="endpoint-description">获取行业列表</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/industries/{industry}</span>
+                    <span class="endpoint-description">获取行业详细信息</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/industries/{industry}/companies</span>
+                    <span class="endpoint-description">获取行业公司列表</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="endpoint-group">
+            <div class="endpoint-header">⚙️ 任务管理</div>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/tasks/</span>
+                    <span class="endpoint-description">获取任务列表</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">POST</span>
+                    <span class="endpoint-path">/api/v1/tasks/</span>
+                    <span class="endpoint-description">创建新任务</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/tasks/{task_id}</span>
+                    <span class="endpoint-description">获取任务详情</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="endpoint-group">
+            <div class="endpoint-header">🔌 数据源</div>
+            <div class="endpoint-list">
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/data-sources/</span>
+                    <span class="endpoint-description">获取数据源列表</span>
+                </div>
+                <div class="endpoint-item">
+                    <span class="endpoint-method">GET</span>
+                    <span class="endpoint-path">/api/v1/data-sources/{source}/status</span>
+                    <span class="endpoint-description">检查数据源状态</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Swagger UI 容器 -->
+    <div id="swagger-ui"></div>
+    
+    <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-standalone-preset.js"></script>
+    <script src="/static/custom.js"></script>
+    <script>
+        window.onload = function() {
+            const ui = SwaggerUIBundle({
+                url: '/openapi.json',
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                docExpansion: "list",
+                defaultModelsExpandDepth: 1,
+                defaultModelExpandDepth: 1,
+                displayRequestDuration: true,
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                tryItOutEnabled: true,
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                onComplete: function() {
+                    // 自定义完成后的处理
+                    console.log('API文档加载完成');
+                }
+            });
+        };
+    </script>
+</body>
+</html> 

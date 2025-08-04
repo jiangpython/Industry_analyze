@@ -11,7 +11,7 @@ from datetime import datetime
 from app.services.realtime_data_service import realtime_service
 from app.utils.industry_mapper import IndustryMapper
 
-router = APIRouter(prefix="/realtime", tags=["realtime"])
+router = APIRouter(prefix="/realtime", tags=["实时数据"])
 
 # Pydantic模型
 class StockDataResponse(BaseModel):
@@ -47,7 +47,7 @@ class CacheInfoResponse(BaseModel):
     timestamp: str
     data_type: str
 
-@router.get("/stock/{symbol}", response_model=StockDataResponse)
+@router.get("/stock/{symbol}", response_model=StockDataResponse, summary="📈 获取个股实时数据", operation_id="stock_realtime_data")
 def get_stock_realtime_data(
     symbol: str = Path(..., description="股票代码，例如：000001（平安银行）、000002（万科A）、300750（宁德时代）"),
     force_refresh: bool = Query(False, description="强制刷新数据，忽略缓存。默认False，建议仅在需要最新数据时使用")
@@ -91,7 +91,7 @@ def get_stock_realtime_data(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取股票数据失败: {str(e)}")
 
-@router.get("/companies/{industry}", response_model=List[CompanyResponse])
+@router.get("/companies/{industry}", response_model=List[CompanyResponse], summary="🏢 获取行业公司实时数据", operation_id="companies_realtime_data")
 def get_companies_realtime(
     industry: str = Path(..., description="行业名称，支持中文和英文。例如：医药、新能源、半导体、medical、new_energy、semiconductor"),
     force_refresh: bool = Query(False, description="强制刷新数据，忽略缓存。默认False，建议仅在需要最新数据时使用")
@@ -143,7 +143,7 @@ def get_companies_realtime(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取行业数据失败: {str(e)}")
 
-@router.get("/cache/info", response_model=Dict[str, CacheInfoResponse])
+@router.get("/cache/info", response_model=Dict[str, CacheInfoResponse], summary="💾 获取缓存信息", operation_id="cache_info")
 def get_cache_info():
     """获取缓存信息"""
     try:
@@ -164,7 +164,7 @@ def get_cache_info():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取缓存信息失败: {str(e)}")
 
-@router.delete("/cache")
+@router.delete("/cache", summary="🗑️ 清除缓存", operation_id="clear_cache")
 def clear_cache(cache_key: Optional[str] = Query(None, description="指定缓存键，为空则清除所有缓存")):
     """清除缓存"""
     try:
@@ -181,7 +181,7 @@ def clear_cache(cache_key: Optional[str] = Query(None, description="指定缓存
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"清除缓存失败: {str(e)}")
 
-@router.get("/test/akshare")
+@router.get("/test/akshare", summary="🔗 测试AKShare连接", operation_id="test_akshare_connection")
 def test_akshare_connection():
     """测试AKShare连接"""
     try:
@@ -205,7 +205,7 @@ def test_akshare_connection():
             "sample_data": []
         }
 
-@router.get("/summary")
+@router.get("/summary", summary="📊 获取实时数据概览", operation_id="realtime_summary")
 def get_realtime_summary():
     """获取实时数据摘要"""
     try:
