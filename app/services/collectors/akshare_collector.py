@@ -3,6 +3,7 @@ from typing import Dict, Any, List, Optional
 from app.services.collectors.base_collector import BaseCollector
 import logging
 from datetime import datetime, timedelta
+import pandas as pd # Added missing import for pandas
 
 logger = logging.getLogger(__name__)
 
@@ -67,20 +68,18 @@ class AKShareCollector(BaseCollector):
                 logger.warning(f"获取股票信息失败: {e}")
                 stock_info = {}
             
-            # 获取公司财务数据
+            # 获取公司财务数据 - 修复API调用
             try:
-                # 资产负债表
-                balance_sheet_df = ak.stock_financial_report_sina(symbol=symbol, symbol_type="资产负债表")
-                # 利润表
-                income_statement_df = ak.stock_financial_report_sina(symbol=symbol, symbol_type="利润表")
-                # 现金流量表
-                cash_flow_df = ak.stock_financial_report_sina(symbol=symbol, symbol_type="现金流量表")
+                # 使用正确的API调用方式获取财务摘要数据
+                financial_abstract_df = ak.stock_financial_abstract(symbol=symbol)
                 
-                financial_data = {
-                    "balance_sheet": balance_sheet_df.to_dict() if not balance_sheet_df.empty else {},
-                    "income_statement": income_statement_df.to_dict() if not income_statement_df.empty else {},
-                    "cash_flow": cash_flow_df.to_dict() if not cash_flow_df.empty else {}
-                }
+                financial_data = {}
+                if not financial_abstract_df.empty:
+                    # 处理财务摘要数据
+                    financial_data = self._process_financial_abstract(financial_abstract_df)
+                else:
+                    logger.warning(f"股票 {symbol} 无财务摘要数据")
+                    
             except Exception as e:
                 logger.warning(f"获取财务报表失败: {e}")
                 financial_data = {}
@@ -107,8 +106,10 @@ class AKShareCollector(BaseCollector):
                 stock_industry_info_df = ak.stock_sector_detail(sector="申万一级")
                 if not stock_industry_info_df.empty:
                     for _, row in stock_industry_info_df.iterrows():
-                        if row['代码'] == symbol:
-                            stock_sector = row['行业']
+                        # 修复数据类型转换问题
+                        stock_code = str(row.get('代码', '')).strip()
+                        if stock_code == symbol:
+                            stock_sector = row.get('行业', '')
                             break
             except Exception as e:
                 logger.warning(f"获取行业信息失败: {e}")
@@ -130,6 +131,117 @@ class AKShareCollector(BaseCollector):
         except Exception as e:
             logger.error(f"获取股票数据失败: {e}")
             raise
+    
+    def _process_financial_abstract(self, df) -> Dict[str, Any]:
+        """处理财务摘要数据"""
+        try:
+            financial_data = {
+                'balance_sheet': {},
+                'income_statement': {},
+                'cash_flow': {},
+                'key_indicators': {}
+            }
+            
+            if df.empty:
+                return financial_data
+            
+            # 获取所有可用的日期列（除了'选项'和'指标'）
+            date_columns = [col for col in df.columns if col not in ['选项', '指标']]
+            if not date_columns:
+                return financial_data
+            
+            # 按时间排序，从新到旧
+            date_columns.sort(reverse=True)
+            
+            # 获取最新的数据（保持向后兼容）
+            latest_date = date_columns[0]
+            
+            # 提取关键财务指标
+            for _, row in df.iterrows():
+                indicator = row.get('指标', '')
+                value = row.get(latest_date, None)
+                
+                if pd.isna(value) or value == '':
+                    continue
+                
+                # 分类处理不同的财务指标
+                if '资产' in indicator and '总资产' in indicator:
+                    financial_data['balance_sheet']['total_assets'] = self._convert_to_float(value)
+                elif '负债' in indicator and '总负债' in indicator:
+                    financial_data['balance_sheet']['total_liabilities'] = self._convert_to_float(value)
+                elif '营业收入' in indicator:
+                    financial_data['income_statement']['revenue'] = self._convert_to_float(value)
+                elif '净利润' in indicator:
+                    financial_data['income_statement']['net_profit'] = self._convert_to_float(value)
+                elif '经营活动现金流量净额' in indicator:
+                    financial_data['cash_flow']['operating_cash_flow'] = self._convert_to_float(value)
+                elif '净资产收益率' in indicator:
+                    financial_data['key_indicators']['roe'] = self._convert_to_float(value)
+                elif '总资产收益率' in indicator:
+                    financial_data['key_indicators']['roa'] = self._convert_to_float(value)
+                elif '资产负债率' in indicator:
+                    financial_data['key_indicators']['debt_ratio'] = self._convert_to_float(value)
+            
+            # 计算财务比率
+            self._calculate_financial_ratios(financial_data)
+            
+            return financial_data
+            
+        except Exception as e:
+            logger.error(f"处理财务摘要数据失败: {e}")
+            return {}
+    
+    def _convert_to_float(self, value):
+        """转换值为浮点数"""
+        try:
+            if isinstance(value, str):
+                # 移除可能的单位（万元、亿元等）
+                value = value.replace('万元', '').replace('亿元', '').replace(',', '')
+                # 如果是亿元，转换为万元
+                if '亿' in str(value):
+                    value = float(value.replace('亿', '')) * 10000
+                return float(value)
+            return float(value)
+        except (ValueError, TypeError):
+            return None
+    
+    def _calculate_financial_ratios(self, financial_data):
+        """计算财务比率"""
+        try:
+            # 从资产负债表获取数据
+            total_assets = financial_data['balance_sheet'].get('total_assets')
+            total_liabilities = financial_data['balance_sheet'].get('total_liabilities')
+            
+            # 从利润表获取数据
+            revenue = financial_data['income_statement'].get('revenue')
+            net_profit = financial_data['income_statement'].get('net_profit')
+            
+            # 从现金流量表获取数据
+            operating_cash_flow = financial_data['cash_flow'].get('operating_cash_flow')
+            
+            # 计算ROE（净资产收益率）
+            if net_profit and total_assets and total_liabilities:
+                equity = total_assets - total_liabilities
+                if equity > 0:
+                    financial_data['key_indicators']['roe_calculated'] = (net_profit / equity) * 100
+            
+            # 计算ROA（总资产收益率）
+            if net_profit and total_assets:
+                financial_data['key_indicators']['roa_calculated'] = (net_profit / total_assets) * 100
+            
+            # 计算资产负债率
+            if total_liabilities and total_assets:
+                financial_data['key_indicators']['debt_ratio_calculated'] = (total_liabilities / total_assets) * 100
+            
+            # 计算流动比率（简化计算）
+            if total_assets and total_liabilities:
+                current_assets = total_assets * 0.6  # 假设60%为流动资产
+                current_liabilities = total_liabilities * 0.8  # 假设80%为流动负债
+                if current_liabilities > 0:
+                    financial_data['key_indicators']['current_ratio'] = current_assets / current_liabilities
+                    
+        except Exception as e:
+            logger.error(f"计算财务比率失败: {e}")
     
     def get_fund_data(self, symbol: str, **kwargs) -> Dict[str, Any]:
         """获取基金数据"""

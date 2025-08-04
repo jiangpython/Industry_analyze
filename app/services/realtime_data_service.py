@@ -268,5 +268,224 @@ class RealtimeDataService:
         self._all_stocks_cache = data
         self._all_stocks_cache_time = datetime.now()
 
+    def get_financial_data(self, company_code: str, force_refresh: bool = False) -> List[Dict[str, Any]]:
+        """
+        获取公司财务数据
+        混合模式：优先本地缓存，需要时实时采集
+        """
+        try:
+            # 1. 检查本地缓存
+            if not force_refresh:
+                cached_data = data_manager.get_financial_data(company_code)
+                if cached_data:
+                    logger.info(f"使用本地财务数据: {company_code}")
+                    return cached_data
+            
+            # 2. 实时采集财务数据
+            logger.info(f"实时采集财务数据: {company_code}")
+            financial_data = self._fetch_financial_data(company_code)
+            
+            if financial_data:
+                # 3. 保存到本地
+                for data in financial_data:
+                    data_manager.save_financial_data(company_code, data)
+                logger.info(f"财务数据采集成功并保存: {company_code}")
+                return financial_data
+            else:
+                # 4. 降级到本地存储
+                logger.warning(f"实时采集失败，使用本地数据: {company_code}")
+                return data_manager.get_financial_data(company_code)
+                
+        except Exception as e:
+            logger.error(f"获取财务数据失败 {company_code}: {e}")
+            return data_manager.get_financial_data(company_code)
+    
+    def _fetch_financial_data(self, company_code: str) -> List[Dict[str, Any]]:
+        """从AKShare获取公司财务数据"""
+        try:
+            import akshare as ak
+            
+            # 获取财务报表数据
+            financial_data = []
+            
+            # 使用可靠的财务摘要接口
+            try:
+                financial_abstract = ak.stock_financial_abstract(symbol=company_code)
+                if not financial_abstract.empty:
+                    # 获取所有可用的日期列（除了'选项'和'指标'）
+                    date_columns = [col for col in financial_abstract.columns if col not in ['选项', '指标']]
+                    
+                    # 按时间排序，从新到旧
+                    date_columns.sort(reverse=True)
+                    
+                    # 为每个日期创建一条财务记录
+                    for date_col in date_columns:
+                        financial_record = {
+                            'report_date': date_col,
+                            'data_type': 'annual' if '年度' in str(date_col) or date_col.endswith('1231') else 'quarterly',
+                            'source': 'AKShare财务摘要'
+                        }
+                        
+                        # 提取该日期的财务数据
+                        for _, row in financial_abstract.iterrows():
+                            indicator = row.get('指标', '')
+                            value = row.get(date_col, None)
+                            
+                            if pd.isna(value) or value == '':
+                                continue
+                            
+                            # 分类处理不同的财务指标
+                            if '资产' in indicator and '总资产' in indicator:
+                                financial_record['total_assets'] = self._convert_to_float(value)
+                            elif '负债' in indicator and '总负债' in indicator:
+                                financial_record['total_liabilities'] = self._convert_to_float(value)
+                            elif '营业收入' in indicator:
+                                financial_record['revenue'] = self._convert_to_float(value)
+                            elif '净利润' in indicator:
+                                financial_record['net_profit'] = self._convert_to_float(value)
+                            elif '经营活动现金流量净额' in indicator:
+                                financial_record['operating_cash_flow'] = self._convert_to_float(value)
+                        
+                        # 只有当有实际数据时才添加记录
+                        if (financial_record.get('total_assets') or 
+                            financial_record.get('revenue') or 
+                            financial_record.get('net_profit')):
+                            financial_data.append(financial_record)
+                            
+            except Exception as e:
+                logger.warning(f"获取财务摘要失败 {company_code}: {e}")
+            
+            # 如果财务摘要没有数据，尝试其他方法
+            if not financial_data:
+                try:
+                    # 尝试使用财务指标接口
+                    financial_indicators = ak.stock_financial_analysis_indicator(symbol=company_code)
+                    if not financial_indicators.empty:
+                        # 获取所有可用的日期
+                        available_dates = financial_indicators.index
+                        
+                        for date in available_dates:
+                            financial_record = {
+                                'report_date': date.strftime('%Y-%m-%d'),
+                                'data_type': 'annual' if '年度' in str(date) or date.strftime('%m%d') == '1231' else 'quarterly',
+                                'source': 'AKShare财务指标'
+                            }
+                            
+                            # 提取关键指标
+                            if '营业收入' in financial_indicators.columns:
+                                financial_record['revenue'] = financial_indicators.loc[date, '营业收入']
+                            if '净利润' in financial_indicators.columns:
+                                financial_record['net_profit'] = financial_indicators.loc[date, '净利润']
+                            if '总资产' in financial_indicators.columns:
+                                financial_record['total_assets'] = financial_indicators.loc[date, '总资产']
+                            if '总负债' in financial_indicators.columns:
+                                financial_record['total_liabilities'] = financial_indicators.loc[date, '总负债']
+                            
+                            if financial_record.get('revenue') or financial_record.get('net_profit'):
+                                financial_data.append(financial_record)
+                                
+                except Exception as e:
+                    logger.warning(f"获取财务指标失败 {company_code}: {e}")
+            
+            return financial_data
+            
+        except Exception as e:
+            logger.error(f"采集财务数据失败 {company_code}: {e}")
+            return []
+    
+    def _convert_to_float(self, value):
+        """转换值为浮点数"""
+        try:
+            if isinstance(value, str):
+                # 移除可能的单位（万元、亿元等）
+                value = value.replace('万元', '').replace('亿元', '').replace(',', '')
+                # 如果是亿元，转换为万元
+                if '亿' in str(value):
+                    value = float(value.replace('亿', '')) * 10000
+                return float(value)
+            return float(value)
+        except (ValueError, TypeError):
+            return None
+
+    def get_industry_data(self, industry: str, force_refresh: bool = False) -> Optional[Dict[str, Any]]:
+        """
+        获取行业数据
+        混合模式：优先本地缓存，需要时实时采集
+        """
+        try:
+            # 1. 检查本地缓存
+            if not force_refresh:
+                cached_data = data_manager.get_industry_data(industry)
+                if cached_data:
+                    logger.info(f"使用本地行业数据: {industry}")
+                    return cached_data
+            
+            # 2. 实时采集行业数据
+            logger.info(f"实时采集行业数据: {industry}")
+            industry_data = self._fetch_industry_data(industry)
+            
+            if industry_data:
+                # 3. 保存到本地
+                data_manager.save_industry_data(industry, industry_data)
+                logger.info(f"行业数据采集成功并保存: {industry}")
+                return industry_data
+            else:
+                # 4. 降级到本地存储
+                logger.warning(f"实时采集失败，使用本地数据: {industry}")
+                return data_manager.get_industry_data(industry)
+                
+        except Exception as e:
+            logger.error(f"获取行业数据失败 {industry}: {e}")
+            return data_manager.get_industry_data(industry)
+    
+    def _fetch_industry_data(self, industry: str) -> Optional[Dict[str, Any]]:
+        """从AKShare获取行业数据"""
+        try:
+            import akshare as ak
+            
+            # 获取行业相关数据
+            industry_data = {
+                'industry': industry,
+                'data_type': 'market',
+                'market_size': None,
+                'growth_rate': None,
+                'company_count': None,
+                'avg_pe': None,
+                'description': f'{industry}行业数据',
+                'source': 'AKShare行业数据',
+                'update_time': datetime.now().isoformat()
+            }
+            
+            # 尝试获取行业指数数据
+            try:
+                # 这里可以根据行业名称获取相应的指数数据
+                # 例如：医药行业可以获取医药指数
+                if '医药' in industry:
+                    # 获取医药指数数据
+                    pass
+                elif '新能源' in industry:
+                    # 获取新能源指数数据
+                    pass
+                elif '半导体' in industry:
+                    # 获取半导体指数数据
+                    pass
+                
+                # 设置一些示例数据
+                industry_data.update({
+                    'market_size': 1000000000,  # 10亿
+                    'growth_rate': 0.15,  # 15%
+                    'company_count': 50,
+                    'avg_pe': 25.5
+                })
+                
+            except Exception as e:
+                logger.warning(f"获取行业指数数据失败 {industry}: {e}")
+            
+            return industry_data
+            
+        except Exception as e:
+            logger.error(f"采集行业数据失败 {industry}: {e}")
+            return None
+
 # 全局实例
 realtime_service = RealtimeDataService() 

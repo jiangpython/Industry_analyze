@@ -111,57 +111,62 @@ class AKShareDataProcessor:
             
             financial_data_list = []
             
-            # 处理财务报表数据
-            financials = data.get("financials", {})
+            # 获取财务数据
+            financial_data = data.get("financial_data", {})
+            if not financial_data:
+                return []
             
-            # 处理资产负债表
-            if "balance_sheet" in financials:
-                balance_sheet = financials["balance_sheet"]
-                if isinstance(balance_sheet, pd.DataFrame):
-                    for date in balance_sheet.columns:
-                        financial_data = {
-                            "report_date": date.isoformat(),
-                            "data_type": "balance_sheet",
-                            "total_assets": balance_sheet.get("总资产", {}).get(date),
-                            "total_liabilities": balance_sheet.get("总负债", {}).get(date),
-                            "total_equity": balance_sheet.get("股东权益", {}).get(date),
-                            "cash": balance_sheet.get("货币资金", {}).get(date),
-                            "debt": balance_sheet.get("总负债", {}).get(date),
-                            "created_at": datetime.now().isoformat()
-                        }
-                        financial_data_list.append(financial_data)
+            # 处理资产负债表数据
+            balance_sheet = financial_data.get("balance_sheet", {})
+            if balance_sheet:
+                financial_record = {
+                    "report_date": datetime.now().isoformat(),
+                    "data_type": "balance_sheet",
+                    "total_assets": balance_sheet.get("total_assets"),
+                    "total_liabilities": balance_sheet.get("total_liabilities"),
+                    "created_at": datetime.now().isoformat()
+                }
+                financial_data_list.append(financial_record)
             
-            # 处理利润表
-            if "income_statement" in financials:
-                income_statement = financials["income_statement"]
-                if isinstance(income_statement, pd.DataFrame):
-                    for date in income_statement.columns:
-                        financial_data = {
-                            "report_date": date.isoformat(),
-                            "data_type": "income_statement",
-                            "revenue": income_statement.get("营业收入", {}).get(date),
-                            "net_profit": income_statement.get("净利润", {}).get(date),
-                            "gross_profit": income_statement.get("营业利润", {}).get(date),
-                            "operating_income": income_statement.get("营业利润", {}).get(date),
-                            "created_at": datetime.now().isoformat()
-                        }
-                        financial_data_list.append(financial_data)
+            # 处理利润表数据
+            income_statement = financial_data.get("income_statement", {})
+            if income_statement:
+                financial_record = {
+                    "report_date": datetime.now().isoformat(),
+                    "data_type": "income_statement",
+                    "revenue": income_statement.get("revenue"),
+                    "net_profit": income_statement.get("net_profit"),
+                    "created_at": datetime.now().isoformat()
+                }
+                financial_data_list.append(financial_record)
             
-            # 处理现金流量表
-            if "cash_flow" in financials:
-                cash_flow = financials["cash_flow"]
-                if isinstance(cash_flow, pd.DataFrame):
-                    for date in cash_flow.columns:
-                        financial_data = {
-                            "report_date": date.isoformat(),
-                            "data_type": "cash_flow",
-                            "operating_cash_flow": cash_flow.get("经营活动现金流量净额", {}).get(date),
-                            "investing_cash_flow": cash_flow.get("投资活动现金流量净额", {}).get(date),
-                            "financing_cash_flow": cash_flow.get("筹资活动现金流量净额", {}).get(date),
-                            "free_cash_flow": cash_flow.get("自由现金流量", {}).get(date),
-                            "created_at": datetime.now().isoformat()
-                        }
-                        financial_data_list.append(financial_data)
+            # 处理现金流量表数据
+            cash_flow = financial_data.get("cash_flow", {})
+            if cash_flow:
+                financial_record = {
+                    "report_date": datetime.now().isoformat(),
+                    "data_type": "cash_flow",
+                    "operating_cash_flow": cash_flow.get("operating_cash_flow"),
+                    "created_at": datetime.now().isoformat()
+                }
+                financial_data_list.append(financial_record)
+            
+            # 处理关键财务指标
+            key_indicators = financial_data.get("key_indicators", {})
+            if key_indicators:
+                financial_record = {
+                    "report_date": datetime.now().isoformat(),
+                    "data_type": "key_indicators",
+                    "roe": key_indicators.get("roe"),
+                    "roa": key_indicators.get("roa"),
+                    "debt_ratio": key_indicators.get("debt_ratio"),
+                    "current_ratio": key_indicators.get("current_ratio"),
+                    "roe_calculated": key_indicators.get("roe_calculated"),
+                    "roa_calculated": key_indicators.get("roa_calculated"),
+                    "debt_ratio_calculated": key_indicators.get("debt_ratio_calculated"),
+                    "created_at": datetime.now().isoformat()
+                }
+                financial_data_list.append(financial_record)
             
             return financial_data_list
             

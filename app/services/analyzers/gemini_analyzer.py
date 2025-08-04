@@ -38,6 +38,83 @@ class GeminiAnalyzer:
             logger.error(f"Gemini分析失败: {e}")
             return {"error": f"分析失败: {str(e)}"}
     
+    def analyze_financial_data(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+        """分析财务数据（兼容companies_simple.py的调用）"""
+        if not self.model:
+            return {"error": "Gemini API未配置"}
+        
+        try:
+            # 提取财务数据
+            financial_data = analysis_data.get('financial_data', {})
+            company_name = analysis_data.get('company_name', '未知')
+            industry = analysis_data.get('industry', '未知')
+            company_code = analysis_data.get('company_code', '未知')
+            
+            # 构建分析数据
+            company_data = {
+                'name': company_name,
+                'code': company_code,
+                'industry': industry,
+                'revenue': financial_data.get('revenue', 0),
+                'net_profit': financial_data.get('net_profit', 0),
+                'total_assets': financial_data.get('total_assets', 0),
+                'total_liabilities': financial_data.get('total_liabilities', 0),
+                'operating_cash_flow': financial_data.get('operating_cash_flow', 0),
+                'roe': financial_data.get('roe', 0),
+                'roa': financial_data.get('roa', 0),
+                'debt_ratio': financial_data.get('debt_ratio', 0),
+                'current_ratio': financial_data.get('current_ratio', 0),
+                'revenue_growth': financial_data.get('revenue_growth', 0),
+                'profit_growth': financial_data.get('profit_growth', 0)
+            }
+            
+            # 使用现有的财务分析方法
+            return self.analyze_company_financials(company_data)
+            
+        except Exception as e:
+            logger.error(f"财务数据分析失败: {e}")
+            return {"error": f"分析失败: {str(e)}"}
+    
+    def analyze_company_trends(self, analysis_data: Dict[str, Any]) -> Dict[str, Any]:
+        """分析公司趋势（兼容companies_simple.py的调用）"""
+        if not self.model:
+            return {"error": "Gemini API未配置"}
+        
+        try:
+            # 提取数据
+            company_name = analysis_data.get('company_name', '未知')
+            industry = analysis_data.get('industry', '未知')
+            company_code = analysis_data.get('company_code', '未知')
+            financial_data = analysis_data.get('financial_data', {})
+            
+            # 构建趋势分析数据
+            trend_data = {
+                'name': company_name,
+                'code': company_code,
+                'industry': industry,
+                'revenue_growth': financial_data.get('revenue_growth', 0),
+                'profit_growth': financial_data.get('profit_growth', 0),
+                'assets_growth': financial_data.get('assets_growth', 0),
+                'revenue': financial_data.get('revenue', 0),
+                'net_profit': financial_data.get('net_profit', 0),
+                'total_assets': financial_data.get('total_assets', 0)
+            }
+            
+            # 构建趋势分析提示
+            prompt = self._build_trend_analysis_prompt(trend_data)
+            
+            # 调用Gemini API
+            response = self.model.generate_content(prompt)
+            
+            # 解析响应
+            analysis = self._parse_trend_analysis_response(response.text)
+            
+            return analysis
+            
+        except Exception as e:
+            logger.error(f"趋势分析失败: {e}")
+            return {"error": f"分析失败: {str(e)}"}
+    
     def analyze_industry_trends(self, industry_data: Dict[str, Any]) -> Dict[str, Any]:
         """分析行业趋势"""
         if not self.model:
@@ -93,6 +170,38 @@ class GeminiAnalyzer:
 """
         return prompt
     
+    def _build_trend_analysis_prompt(self, data: Dict[str, Any]) -> str:
+        """构建趋势分析提示"""
+        prompt = f"""
+请分析以下公司的发展趋势，重点关注医药、新能源、半导体、芯片等行业特点：
+
+公司信息：
+- 公司名称：{data.get('name', '未知')}
+- 所属行业：{data.get('industry', '未知')}
+- 股票代码：{data.get('code', '未知')}
+
+财务数据：
+- 营业收入：{data.get('revenue', 0)} 万元
+- 净利润：{data.get('net_profit', 0)} 万元
+- 总资产：{data.get('total_assets', 0)} 万元
+
+增长趋势：
+- 收入增长率：{data.get('revenue_growth', 0):.2f}%
+- 净利润增长率：{data.get('profit_growth', 0):.2f}%
+- 资产增长率：{data.get('assets_growth', 0):.2f}%
+
+请从以下角度进行分析：
+1. 业务发展趋势
+2. 盈利能力趋势
+3. 资产扩张趋势
+4. 行业地位变化
+5. 未来发展前景
+6. 投资价值评估
+
+请用中文回答，格式要清晰易读。
+"""
+        return prompt
+    
     def _build_industry_analysis_prompt(self, data: Dict[str, Any]) -> str:
         """构建行业分析提示"""
         prompt = f"""
@@ -130,6 +239,20 @@ class GeminiAnalyzer:
             return analysis
         except Exception as e:
             logger.error(f"解析财务分析响应失败: {e}")
+            return {"error": "解析响应失败"}
+    
+    def _parse_trend_analysis_response(self, response: str) -> Dict[str, Any]:
+        """解析趋势分析响应"""
+        try:
+            analysis = {
+                "summary": response[:500] + "..." if len(response) > 500 else response,
+                "full_analysis": response,
+                "confidence": 0.8,
+                "key_points": self._extract_key_points(response)
+            }
+            return analysis
+        except Exception as e:
+            logger.error(f"解析趋势分析响应失败: {e}")
             return {"error": "解析响应失败"}
     
     def _parse_industry_analysis_response(self, response: str) -> Dict[str, Any]:

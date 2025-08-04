@@ -255,8 +255,8 @@ def get_company(
 def get_company_financial_data(
     company_code: str = Path(..., description="公司代码，6位数字。例如：000001"),
     data_type: Optional[str] = Query(None, description="财务数据类型筛选，可选值：annual、quarterly。不填则返回所有类型"),
-    start_date: Optional[datetime] = Query(None, description="起始日期，格式YYYY-MM-DD。例如：2023-01-01"),
-    end_date: Optional[datetime] = Query(None, description="结束日期，格式YYYY-MM-DD。例如：2023-12-31"),
+    start_date: Optional[str] = Query(None, description="起始日期，格式YYYY-MM-DD。例如：2023-01-01"),
+    end_date: Optional[str] = Query(None, description="结束日期，格式YYYY-MM-DD。例如：2023-12-31"),
     force_refresh: bool = Query(False, description="强制刷新，优先获取最新数据。默认False，优先本地缓存")
 ):
     """
@@ -302,17 +302,22 @@ def get_company_financial_data(
     realtime_service = RealtimeDataService()
     financial_records = None
     
+    # 1. 优先尝试实时数据采集
     if force_refresh:
-        # 实时获取财务数据（如有实现，可补充）
-        # financial_records = realtime_service.get_financial_data(company_code, force_refresh)
-        pass
+        financial_records = realtime_service.get_financial_data(company_code, force_refresh)
     
-    # 降级本地
+    # 2. 如果本地没有数据，自动启动采集
     if not financial_records:
         financial_records = data_manager.get_financial_data(company_code)
+        
+        # 如果本地也没有数据，尝试实时采集
+        if not financial_records:
+            logger.info(f"本地无数据，启动实时采集: {company_code}")
+            financial_records = realtime_service.get_financial_data(company_code, force_refresh=True)
     
+    # 3. 如果仍然没有数据，返回错误
     if not financial_records:
-        raise HTTPException(status_code=404, detail="未找到财务数据")
+        raise HTTPException(status_code=404, detail=f"未找到公司 {company_code} 的财务数据，请检查股票代码是否正确")
     
     # 过滤数据
     filtered_records = []
@@ -320,11 +325,37 @@ def get_company_financial_data(
         if data_type and record.get('data_type') != data_type:
             continue
         
-        record_date = datetime.fromisoformat(record.get('report_date', ''))
-        if start_date and record_date < start_date:
+        # 修复日期解析逻辑
+        record_date_str = record.get('report_date', '')
+        try:
+            # 处理AKShare返回的日期格式（如：20250331）
+            if len(record_date_str) == 8 and record_date_str.isdigit():
+                # 格式：YYYYMMDD
+                record_date = datetime.strptime(record_date_str, '%Y%m%d')
+            else:
+                # 尝试其他格式
+                record_date = datetime.fromisoformat(record_date_str.replace('Z', '+00:00'))
+        except Exception as e:
+            logger.warning(f"日期解析失败: {record_date_str}, 错误: {e}")
+            # 如果日期解析失败，跳过这条记录
             continue
-        if end_date and record_date > end_date:
-            continue
+        
+        # 日期过滤
+        if start_date:
+            try:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+                if record_date < start_dt:
+                    continue
+            except Exception as e:
+                logger.warning(f"起始日期解析失败: {start_date}, 错误: {e}")
+        
+        if end_date:
+            try:
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+                if record_date > end_dt:
+                    continue
+            except Exception as e:
+                logger.warning(f"结束日期解析失败: {end_date}, 错误: {e}")
         
         filtered_records.append(FinancialDataResponse(
             report_date=record_date,

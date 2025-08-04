@@ -100,8 +100,8 @@ def get_industry_suggestions(
 def get_industry_data(
     industry_name: str = Path(..., description="行业名称，支持中文和英文。例如：医药、新能源、半导体"),
     data_type: Optional[str] = Query(None, description="数据类型筛选，可选值：market、financial、trend。不填则返回所有类型"),
-    start_date: Optional[datetime] = Query(None, description="起始日期，格式YYYY-MM-DD。例如：2023-01-01"),
-    end_date: Optional[datetime] = Query(None, description="结束日期，格式YYYY-MM-DD。例如：2023-12-31"),
+    start_date: Optional[str] = Query(None, description="起始日期，格式YYYY-MM-DD。例如：2023-01-01"),
+    end_date: Optional[str] = Query(None, description="结束日期，格式YYYY-MM-DD。例如：2023-12-31"),
     force_refresh: bool = Query(False, description="强制刷新，优先获取最新数据。默认False，优先本地缓存")
 ):
     """
@@ -159,17 +159,22 @@ def get_industry_data(
     realtime_service = RealtimeDataService()
     industry_data = None
     
+    # 1. 优先尝试实时数据采集
     if force_refresh:
-        # 实时获取行业数据（如有实现，可补充）
-        # industry_data = realtime_service.get_industry_data(mapped_industry, force_refresh)
-        pass
+        industry_data = realtime_service.get_industry_data(mapped_industry, force_refresh)
     
-    # 降级本地
+    # 2. 如果本地没有数据，自动启动采集
     if not industry_data:
         industry_data = data_manager.get_industry_data(mapped_industry)
+        
+        # 如果本地也没有数据，尝试实时采集
+        if not industry_data:
+            logger.info(f"本地无数据，启动实时采集: {mapped_industry}")
+            industry_data = realtime_service.get_industry_data(mapped_industry, force_refresh=True)
     
+    # 3. 如果仍然没有数据，返回错误
     if not industry_data:
-        raise HTTPException(status_code=404, detail=f"未找到{mapped_industry}行业数据")
+        raise HTTPException(status_code=404, detail=f"未找到{mapped_industry}行业数据，请检查行业名称是否正确")
     
     # 转换为响应格式
     response_data = []
